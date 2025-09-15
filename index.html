@@ -26,7 +26,7 @@
 </head>
   <body class="bg-gray-50">
     <div id="root"></div>
-    <!-- CHANGED: Switched to Babel for direct TSX execution -->
-    <script type="text/babel" data-presets="react,typescript" src="index.tsx"></script>
+    <!-- CHANGED: Added data-type="module" to ensure transpiled script runs as a module -->
+    <script type="text/babel" data-type="module" data-presets="react,typescript" src="index.tsx"></script>
   </body>
 </html>
