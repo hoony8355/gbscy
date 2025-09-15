@@ -1,6 +1,6 @@
-
 import React, { useContext, useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+// FIX: Using namespace import for react-router-dom to handle potential module resolution issues.
+import * as ReactRouterDOM from 'react-router-dom';
 import { ArticleContext } from '../App';
 import type { Article } from '../types';
 import { useSeo } from '../hooks/useSeo';
@@ -15,7 +15,7 @@ declare global {
 }
 
 const ViewArticlePage: React.FC = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug } = ReactRouterDOM.useParams<{ slug: string }>();
   const articleContext = useContext(ArticleContext);
   const [article, setArticle] = useState<Article | null>(null);
 
@@ -31,9 +31,9 @@ const ViewArticlePage: React.FC = () => {
       <div className="text-center py-20">
         <h1 className="text-3xl font-bold mb-4">404 - 아티클을 찾을 수 없습니다.</h1>
         <p className="text-gray-600 mb-8">요청하신 페이지를 찾을 수 없습니다. 주소가 올바른지 확인해주세요.</p>
-        <Link to="/" className="bg-teal-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-teal-700 transition-colors">
+        <ReactRouterDOM.Link to="/" className="bg-teal-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-teal-700 transition-colors">
           홈으로 돌아가기
-        </Link>
+        </ReactRouterDOM.Link>
       </div>
     );
   }

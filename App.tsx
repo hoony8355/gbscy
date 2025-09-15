@@ -1,6 +1,6 @@
-
 import React, { useState, createContext, useMemo } from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
+// FIX: Using namespace import for react-router-dom to handle potential module resolution issues.
+import * as ReactRouterDOM from 'react-router-dom';
 import type { Article } from './types';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -27,19 +27,19 @@ const App: React.FC = () => {
 
   return (
     <ArticleContext.Provider value={contextValue}>
-      <HashRouter>
+      <ReactRouterDOM.HashRouter>
         <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800">
           <Header />
           <main className="flex-grow container mx-auto px-4 py-8">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/generate" element={<GeneratePage />} />
-              <Route path="/article/:slug" element={<ViewArticlePage />} />
-            </Routes>
+            <ReactRouterDOM.Routes>
+              <ReactRouterDOM.Route path="/" element={<HomePage />} />
+              <ReactRouterDOM.Route path="/generate" element={<GeneratePage />} />
+              <ReactRouterDOM.Route path="/article/:slug" element={<ViewArticlePage />} />
+            </ReactRouterDOM.Routes>
           </main>
           <Footer />
         </div>
-      </HashRouter>
+      </ReactRouterDOM.HashRouter>
     </ArticleContext.Provider>
   );
 };

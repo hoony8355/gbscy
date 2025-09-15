@@ -1,6 +1,6 @@
-
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+// FIX: Using namespace import for react-router-dom to handle potential module resolution issues.
+import * as ReactRouterDOM from 'react-router-dom';
 import { ArticleContext } from '../App';
 import { generateArticle } from '../services/geminiService';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -14,7 +14,7 @@ const GeneratePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const articleContext = useContext(ArticleContext);
-  const navigate = useNavigate();
+  const navigate = ReactRouterDOM.useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
