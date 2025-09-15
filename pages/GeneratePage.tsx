@@ -1,22 +1,25 @@
+
 import React, { useState, useContext } from 'react';
-// FIX: Using namespace import for react-router-dom to handle potential module resolution issues.
-import * as ReactRouterDOM from 'react-router-dom';
-import { ArticleContext } from '../App';
+import { useNavigate } from 'react-router-dom';
 import { generateArticle } from '../services/geminiService';
+import { ArticleContext } from '../App';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useSeo } from '../hooks/useSeo';
+import type { Article } from '../types';
+import type { ArticleContextType } from '../App';
+
 
 const GeneratePage: React.FC = () => {
-  useSeo('새 아티클 생성 | 고불소치약 정보 허브', '새로운 고불소치약 관련 아티클을 AI로 즉시 생성해보세요.');
-  const [topic, setTopic] = useState<string>('고불소치약 부작용과 예방법');
-  const [keywords, setKeywords] = useState<string>('치아 불소증, 올바른 사용량, 어린이');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  useSeo('AI 아티클 생성', '새로운 주제와 키워드로 고불소치약에 대한 SEO 최적화 아티클을 생성합니다.');
+  const [topic, setTopic] = useState('');
+  const [keywords, setKeywords] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const articleContext = useContext(ArticleContext);
-  const navigate = ReactRouterDOM.useNavigate();
+  const articleContext = useContext(ArticleContext) as ArticleContextType;
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!topic.trim()) {
       setError('아티클 주제를 입력해주세요.');
@@ -27,70 +30,78 @@ const GeneratePage: React.FC = () => {
     setError(null);
 
     try {
-      const keywordList = keywords.split(',').map(k => k.trim()).filter(Boolean);
-      const newArticle = await generateArticle(topic, keywordList);
-      articleContext?.addArticle(newArticle);
+      const keywordsArray = keywords.split(',').map(kw => kw.trim()).filter(Boolean);
+      const newArticle: Article = await generateArticle(topic, keywordsArray);
+      
+      articleContext.addArticle(newArticle);
       navigate(`/article/${newArticle.slug}`);
+
     } catch (err) {
-      setError('아티클 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-      console.error(err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('알 수 없는 오류가 발생했습니다.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">AI 아티클 생성기</h1>
-        <p className="text-gray-600 mt-2">
-          고불소치약과 관련된 주제와 핵심 키워드를 입력하여 SEO에 최적화된 아티클을 생성하세요.
+    <div className="max-w-3xl mx-auto">
+      <div className="bg-white p-8 rounded-lg shadow-md">
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">AI 아티클 생성하기</h1>
+        <p className="text-gray-600 mb-6">
+          생성하고 싶은 아티클의 주제와 핵심 키워드를 입력해주세요. AI가 SEO에 최적화된 전문적인 아티클을 작성해 드립니다.
         </p>
-      </div>
-
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="topic" className="block text-lg font-medium text-gray-700 mb-2">
-              아티클 주제
-            </label>
-            <input
-              type="text"
-              id="topic"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              placeholder="예: 고불소치약과 일반치약의 차이점"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="keywords" className="block text-lg font-medium text-gray-700 mb-2">
-              핵심 키워드 (쉼표로 구분)
-            </label>
-            <input
-              type="text"
-              id="keywords"
-              value={keywords}
-              onChange={(e) => setKeywords(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              placeholder="예: 불소 함량, 충치 예방, 사용 대상"
-            />
-          </div>
-          {error && <p className="text-red-500 text-center">{error}</p>}
-          <div>
+        
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <form onSubmit={handleGenerate} className="space-y-6">
+            <div>
+              <label htmlFor="topic" className="block text-lg font-medium text-gray-700 mb-2">
+                아티클 주제
+              </label>
+              <input
+                type="text"
+                id="topic"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
+                placeholder="예: 어린이 고불소치약 사용의 장단점"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="keywords" className="block text-lg font-medium text-gray-700 mb-2">
+                핵심 키워드 (쉼표로 구분)
+              </label>
+              <input
+                type="text"
+                id="keywords"
+                value={keywords}
+                onChange={(e) => setKeywords(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
+                placeholder="예: 어린이, 충치 예방, 불소, 안전성"
+              />
+            </div>
+            {error && (
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
+                <p className="font-bold">오류 발생</p>
+                <p>{error}</p>
+              </div>
+            )}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-teal-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-gray-400"
             >
-              {isLoading ? '생성 중...' : '✨ 아티클 생성하기'}
+              {isLoading ? '생성 중...' : '아티클 생성하기'}
             </button>
-          </div>
-        </form>
-      )}
+          </form>
+        )}
+      </div>
     </div>
   );
 };

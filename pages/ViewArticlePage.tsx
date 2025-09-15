@@ -1,62 +1,53 @@
-import React, { useContext, useEffect, useState } from 'react';
-// FIX: Using namespace import for react-router-dom to handle potential module resolution issues.
-import * as ReactRouterDOM from 'react-router-dom';
+
+import React, { useContext } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ArticleContext } from '../App';
-import type { Article } from '../types';
 import { useSeo } from '../hooks/useSeo';
 
-// Define the type for the global 'marked' object
-declare global {
-  interface Window {
-    marked: {
-      parse(markdown: string): string;
-    };
-  }
-}
-
 const ViewArticlePage: React.FC = () => {
-  const { slug } = ReactRouterDOM.useParams<{ slug: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const articleContext = useContext(ArticleContext);
-  const [article, setArticle] = useState<Article | null>(null);
-
-  useEffect(() => {
-    const foundArticle = articleContext?.articles.find(a => a.slug === slug) ?? null;
-    setArticle(foundArticle);
-  }, [slug, articleContext?.articles]);
   
-  useSeo(article?.title ?? '아티클', article?.metaDescription ?? '');
+  // Directly find the article from context. This will re-render if context changes.
+  const article = articleContext?.articles.find(a => a.slug === slug);
+
+  useSeo(article?.title || '아티클을 찾을 수 없습니다', article?.metaDescription || '');
+
+  if (!articleContext) {
+      // This can happen if the context provider is not available yet, providing a fallback.
+      return <div className="text-center py-10"><p>Loading...</p></div>;
+  }
 
   if (!article) {
     return (
-      <div className="text-center py-20">
-        <h1 className="text-3xl font-bold mb-4">404 - 아티클을 찾을 수 없습니다.</h1>
-        <p className="text-gray-600 mb-8">요청하신 페이지를 찾을 수 없습니다. 주소가 올바른지 확인해주세요.</p>
-        <ReactRouterDOM.Link to="/" className="bg-teal-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-teal-700 transition-colors">
+      <div className="text-center py-10">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">404 - 아티클을 찾을 수 없습니다</h1>
+        <p className="text-gray-600 mb-6">요청하신 페이지를 찾을 수 없습니다. 주소가 올바른지 확인해주세요.</p>
+        <Link to="/" className="bg-teal-600 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-700">
           홈으로 돌아가기
-        </ReactRouterDOM.Link>
+        </Link>
       </div>
     );
   }
 
-  const getRenderedHTML = () => {
-    if (window.marked) {
-      return { __html: window.marked.parse(article.markdownContent) };
-    }
-    return { __html: article.markdownContent.replace(/\n/g, '<br />') };
-  };
-
   return (
-    <article className="max-w-4xl mx-auto bg-white p-6 sm:p-8 lg:p-10 rounded-lg shadow-lg">
-      <header className="mb-8 border-b pb-6">
+    <article className="max-w-4xl mx-auto bg-white p-6 sm:p-8 md:p-10 rounded-lg shadow-lg">
+      <header className="mb-8 border-b pb-4">
         <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
           {article.title}
         </h1>
-        <p className="mt-4 text-gray-500">게시일: {article.generatedDate}</p>
+        <p className="text-gray-500 mt-3 text-lg">
+          게시일: {article.generatedDate}
+        </p>
       </header>
-      <div
-        className="prose prose-lg max-w-none prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h2:border-b prose-h2:pb-2 prose-h2:mt-8 prose-a:text-teal-600 hover:prose-a:text-teal-700"
-        dangerouslySetInnerHTML={getRenderedHTML()}
-      />
+      
+      <div className="prose prose-lg max-w-none prose-h1:text-3xl prose-h2:text-2xl prose-h2:border-b prose-h2:pb-2 prose-h2:mt-8 prose-a:text-teal-600 hover:prose-a:text-teal-700">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {article.markdownContent}
+        </ReactMarkdown>
+      </div>
     </article>
   );
 };
