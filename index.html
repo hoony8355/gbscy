@@ -8,6 +8,8 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦷</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- ADDED: Babel Standalone for in-browser TSX transpilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script type="importmap">
 {
   "imports": {
@@ -22,6 +24,7 @@
 </head>
   <body class="bg-gray-50">
     <div id="root"></div>
-    <script type="module" src="index.js"></script>
+    <!-- CHANGED: Switched to Babel for direct TSX execution -->
+    <script type="text/babel" data-presets="react,typescript" src="index.tsx"></script>
   </body>
 </html>
